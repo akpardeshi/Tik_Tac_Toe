@@ -1,0 +1,193 @@
+<! DOCTYPE HTML>
+<HTML>
+	<HEAD>
+		<TITLE>
+			Tic Tac Toe
+		</TITLE>
+
+		<STYLE>
+			canvas{
+				background-color: gray;
+			}
+		</STYLE>
+
+		<SCRIPT src = "C_Square.js"></SCRIPT>
+		<SCRIPT src = "F_ClearCanvas.js"></SCRIPT>
+		<SCRIPT src = "F_PlayerMoveSelector.js"></SCRIPT>
+		<SCRIPT src = "C_Button.js"></SCRIPT>
+		<SCRIPT src = "C_Text.js"></SCRIPT>
+		<SCRIPT src = "F_Validator.js"></SCRIPT>
+		<SCRIPT src = "C_Square1.js"></SCRIPT>
+	</HEAD>
+
+	<BODY>
+		<CANVAS id = "MyCanvas" width = "600" height = "600">
+		</CANVAS>
+
+		<SCRIPT>
+			// this is the code to get context and canvas from the document
+			// we are going to use this context to refer to the canvas in this game
+
+			// getting canvas
+			var g_Canvas =  document.getElementById("MyCanvas");
+
+			// getting context
+			var g_Ctx = g_Canvas.getContext("2d");
+
+			// getting canvas width
+			var g_CanvasWidth = g_Canvas.width;
+
+			// getting canvas height
+			var g_CanvasHeight = g_Canvas.height;
+
+			// the next part will set the FPS of the game
+			var g_Fps = 30;
+			var g_SetInterval = 1000 / g_Fps;
+			var g_NumberOfSquares = 9;
+			var g_goSquareArray = F_CreateSquares( g_NumberOfSquares, 75, 75);
+
+			// g_Turn = true means player one can play if it is false it means player two can play
+			var g_Turn = true;
+
+			// this line will disable the default right click operation
+			// that means it will disable right click popup menu
+			g_Canvas.addEventListener("contextmenu", e => e.preventDefault());
+
+			// This bool indicates whether a game is running or not
+			// If the game is not running the code will display
+			// If the game is running the UI wont be Displayed
+			var g_BoolIsGameRunning = false;
+
+
+			var g_goStartButton = new C_Button("Start", 220, 200, "Red");
+			g_goStartButton.IsActive = true;
+
+			var g_goHelpButton = new C_Button("Help", 220, 350, "Red");
+			g_goHelpButton.IsActive = true;
+
+			var g_goInstructionButton = new C_Button("Instruction", 150, 350, "Red");
+
+			var g_goTitleText = new C_Text( "Tic Tac Toe", 180, 100 );
+			g_goTitleText.IsActive = true;
+
+			var g_goControlButton = new C_Button("Control", 180, 200, "Red");
+			var g_goBackButton = new C_Button("Back", 220, 500, "Red");
+			var g_goRestartButton = new C_Button("Restart", 220, 500, "Red");
+
+			var g_goHelpText = new C_Text( "Help", 240, 100 );
+			var g_goControlText = new C_Text( "Control", 220, 100 );
+			var g_goInstructionText = new C_Text( "Instruction", 180, 100 );
+			var g_BoolShouldDisplayControls = false;
+			var g_BoolShouldDisplayInstructions = false;
+
+			// Winner
+			var g_Winner = undefined;
+
+			// there are 3 states in this game
+			// 1 >>> Start the initial state
+			// 2 >>> Running state when game runs
+			// 3 >>> Completed When one of the two player wins
+			var g_StrState = "Start";
+
+			function F_WriteControls( l_Ctx )
+			{
+				if ( g_BoolShouldDisplayControls )
+				{
+				   l_Ctx.strokeStyle = "Black";
+				   l_Ctx.lineWidth = "4";
+				   l_Ctx.strokeRect( 120, 200, 360, 200);
+				   l_Ctx.stroke();
+				   l_Ctx.font = "bold 28px serif" ;
+				   l_Ctx.fillStyle = "Red" ;
+				   l_Ctx.fillText("Player 1 ==>> left Click", 150, 250) ;
+				   l_Ctx.fillStyle = "Blue" ;
+				   l_Ctx.fillText("Player 2 ==>> right Click", 150, 350) ;
+				}
+			}
+
+			function F_WriteInstructions ( l_Ctx  )
+			{
+				if( g_BoolShouldDisplayInstructions )
+				{
+				   l_Ctx.font = "bold 32px serif";
+				   l_Ctx.fillStyle = "Blue";
+				   l_Ctx.fillText("How To Play", 200, 140) ;
+				   l_Ctx.font = "bold 28px serif";
+				   l_Ctx.fillStyle = "black";
+				   l_Ctx.fillText("This game is the classic tic tac toe", 100, 200);
+				   l_Ctx.fillText("Player one has red circle and he has first turn", 25, 230);
+				   l_Ctx.fillText("Player two has blue cross and he has second turn", 10, 260);
+				   l_Ctx.fillText("After that player one will move and so on", 40, 290);
+				   l_Ctx.fillText("To win each player have to make either their ", 30, 320);
+				   l_Ctx.fillText("symbol either vertically horizontally or ", 50, 350);
+				   l_Ctx.fillText("diagonally ", 240, 380);
+				   l_Ctx.fillText("The first player who maker raw column or ", 30, 410);
+				   l_Ctx.fillText("diagonal wins", 240, 440);
+				   l_Ctx.strokeRect( 5, 170, 590, 280);
+				   l_Ctx.lineWidth = "2";
+				   l_Ctx.strokeStyle = "white";
+				   l_Ctx.stroke();
+				   l_Ctx.font = "bold 48px serif";
+				}
+			}
+
+
+
+			function F_UiManager ()
+			{
+				if( !g_BoolIsGameRunning )
+				{
+					g_goTitleText.M_DrawText( g_Ctx);
+					g_goHelpText.M_DrawText( g_Ctx);
+					g_goStartButton.M_DrawButton( g_Ctx );
+					g_goHelpButton.M_DrawButton( g_Ctx );
+					g_goControlButton.M_DrawButton( g_Ctx );
+					g_goBackButton.M_DrawButton( g_Ctx );
+					g_goControlText.M_DrawText( g_Ctx );
+					g_goInstructionText.M_DrawText( g_Ctx );
+					g_goInstructionButton.M_DrawButton( g_Ctx );
+					F_WriteControls( g_Ctx ) ;
+					F_WriteInstructions ( g_Ctx  ) ;
+				}
+			}
+
+			function F_GameManager()
+			{
+				switch ( g_StrState ) {
+					case "Start":
+						g_goTitleText.M_DrawText( g_Ctx);
+						g_goHelpText.M_DrawText( g_Ctx);
+						g_goStartButton.M_DrawButton( g_Ctx );
+						g_goHelpButton.M_DrawButton( g_Ctx );
+						g_goControlButton.M_DrawButton( g_Ctx );
+						g_goBackButton.M_DrawButton( g_Ctx );
+						g_goControlText.M_DrawText( g_Ctx );
+						g_goInstructionText.M_DrawText( g_Ctx );
+						g_goInstructionButton.M_DrawButton( g_Ctx );
+						F_WriteControls( g_Ctx ) ;
+						F_WriteInstructions ( g_Ctx  ) ;
+						break;
+
+					case "Running":
+						F_DrawSquares( g_NumberOfSquares );
+						F_Validator( g_Ctx );
+						break;
+
+					case "Completed":
+						F_PrintWinnerMessage( g_Winner );
+						g_goRestartButton.IsActive = true;
+						g_goRestartButton.M_DrawButton( g_Ctx );
+						break;
+				}
+			}
+
+			function f_gameLoop()
+			{
+				F_ClearCanvas( g_CanvasWidth, g_CanvasHeight, g_Ctx);
+				F_GameManager() ;
+			}
+
+			var g_gameLoopId = setInterval(f_gameLoop, g_SetInterval);
+		</SCRIPT>
+	</BODY>
+</HTML>
